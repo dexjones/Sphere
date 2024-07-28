@@ -1,20 +1,23 @@
 <!DOCTYPE html>
 <html>
-
-
 <script id="vertex-shader" type="x-shader/x-vertex">
 #version 300 es
 
 in vec4 aPosition;
+in vec3 aNormal;
 
 uniform mat4 uModelViewMatrix;
 uniform mat4 uProjectionMatrix;
+uniform mat4 uNormalMatrix;
 
+out vec3 vNormal;
+out vec3 vPosition;
 
-void
-main()
+void main()
 {
-    gl_Position = uProjectionMatrix*uModelViewMatrix*aPosition;
+    vPosition = vec3(uModelViewMatrix * aPosition);
+    vNormal = normalize(mat3(uNormalMatrix) * aNormal);
+    gl_Position = uProjectionMatrix * uModelViewMatrix * aPosition;
 }
 </script>
 
@@ -23,26 +26,49 @@ main()
 
 precision mediump float;
 
+in vec3 vNormal;
+in vec3 vPosition;
+
+uniform vec3 uLightPosition;
+uniform vec3 uLightAmbient;
+uniform vec3 uLightDiffuse;
+uniform vec3 uLightSpecular;
+uniform vec3 uMaterialAmbient;
+uniform vec3 uMaterialDiffuse;
+uniform vec3 uMaterialSpecular;
+uniform float uShininess;
+
 out vec4 fColor;
 
-void
-main()
+void main()
 {
-    fColor = vec4(0.0, 0.0, 0.0, 1.0);
+    vec3 ambient = uLightAmbient * uMaterialAmbient;
+
+    vec3 lightDir = normalize(uLightPosition - vPosition);
+    float diff = max(dot(lightDir, vNormal), 0.0);
+    vec3 diffuse = uLightDiffuse * (diff * uMaterialDiffuse);
+
+    vec3 viewDir = normalize(-vPosition);
+    vec3 reflectDir = reflect(-lightDir, vNormal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), uShininess);
+    vec3 specular = uLightSpecular * (spec * uMaterialSpecular);
+
+    vec3 result = ambient + diffuse + specular;
+    fColor = vec4(result, 1.0);
 }
 </script>
 
 <p> </p>
-<button id = "Button0">Increase theta</button>
-<button id = "Button1">Decrease theta</button>
-<button id = "Button2">Increase phi</button>
-<button id = "Button3">Decrease phi</button>
+<button id="Button0">Increase theta</button>
+<button id="Button1">Decrease theta</button>
+<button id="Button2">Increase phi</button>
+<button id="Button3">Decrease phi</button>
 <p> </p>
-<button id = "Button4">Increase Subdivisions</button>
-<button id = "Button5">Decrease Subdivisions</button>
+<button id="Button4">Increase Subdivisions</button>
+<button id="Button5">Decrease Subdivisions</button>
 
 <script type="text/javascript" src="initShaders.js"></script>
-<script type="text/javascript" src="MWnew.js"></script>
+<script type="text/javascript" src="MVnew.js"></script>
 <script type="text/javascript" src="wireSphere.js"></script>
 
 <body>
