@@ -4,19 +4,46 @@
 #version 300 es
 
 in vec4 aPosition;
-in vec3 aNormal;
+in vec4 aNormal;
 
 uniform mat4 uModelViewMatrix;
 uniform mat4 uProjectionMatrix;
 uniform mat4 uNormalMatrix;
 
-out vec3 vNormal;
-out vec3 vPosition;
+uniform vec4 uLightPosition;
+uniform vec4 uLightAmbient;
+uniform vec4 uLightDiffuse;
+uniform vec4 uLightSpecular;
+
+uniform vec4 uMaterialAmbient;
+uniform vec4 uMaterialDiffuse;
+uniform vec4 uMaterialSpecular;
+uniform float uShininess;
+
+out vec4 vColor;
 
 void main()
 {
-    vPosition = vec3(uModelViewMatrix * aPosition);
-    vNormal = normalize(mat3(uNormalMatrix) * aNormal);
+    vec4 transformedNormal = normalize(uNormalMatrix * aNormal);
+    vec4 lightDirection = normalize(uLightPosition - (uModelViewMatrix * aPosition));
+
+    // Ambient
+    vec4 ambient = uLightAmbient * uMaterialAmbient;
+
+    // Diffuse
+    float diff = max(dot(lightDirection, transformedNormal), 0.0);
+    vec4 diffuse = uLightDiffuse * uMaterialDiffuse * diff;
+
+    // Specular
+    vec4 viewDirection = normalize(-uModelViewMatrix * aPosition);
+    vec4 reflectDirection = reflect(-lightDirection, transformedNormal);
+    float spec = pow(max(dot(viewDirection, reflectDirection), 0.0), uShininess);
+    vec4 specular = uLightSpecular * uMaterialSpecular * spec;
+
+    // Final color
+    vColor = ambient + diffuse + specular;
+    vColor.a = 1.0; // Ensure the alpha value is set to 1.0
+
     gl_Position = uProjectionMatrix * uModelViewMatrix * aPosition;
 }
 </script>
@@ -26,44 +53,17 @@ void main()
 
 precision mediump float;
 
-in vec3 vNormal;
-in vec3 vPosition;
-
-uniform vec3 uLightPosition;
-uniform vec3 uLightAmbient;
-uniform vec3 uLightDiffuse;
-uniform vec3 uLightSpecular;
-uniform vec3 uMaterialAmbient;
-uniform vec3 uMaterialDiffuse;
-uniform vec3 uMaterialSpecular;
-uniform float uShininess;
+in vec4 vColor;
 
 out vec4 fColor;
 
 void main()
 {
-    vec3 ambient = uLightAmbient * uMaterialAmbient;
-
-    vec3 lightDir = normalize(uLightPosition - vPosition);
-    float diff = max(dot(lightDir, vNormal), 0.0);
-    vec3 diffuse = uLightDiffuse * (diff * uMaterialDiffuse);
-
-    vec3 viewDir = normalize(-vPosition);
-    vec3 reflectDir = reflect(-lightDir, vNormal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), uShininess);
-    vec3 specular = uLightSpecular * (spec * uMaterialSpecular);
-
-    vec3 result = ambient + diffuse + specular;
-    fColor = vec4(result, 1.0);
+    fColor = vColor;
 }
 </script>
 
-<p> </p>
-<button id="Button0">Increase theta</button>
-<button id="Button1">Decrease theta</button>
-<button id="Button2">Increase phi</button>
-<button id="Button3">Decrease phi</button>
-<p> </p>
+<p>Drag the sphere to rotate it</p>
 <button id="Button4">Increase Subdivisions</button>
 <button id="Button5">Decrease Subdivisions</button>
 

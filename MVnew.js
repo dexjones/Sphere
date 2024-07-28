@@ -1163,22 +1163,119 @@ function inverse(m)
 //---------------------------------------------------------
 
 // normal matrix
+function normalMatrix(m, flag) {
+  var a = mat4();
+  var d = det4(m);
 
+  var a00 = [
+     vec3(m[1][1], m[1][2], m[1][3]),
+     vec3(m[2][1], m[2][2], m[2][3]),
+     vec3(m[3][1], m[3][2], m[3][3])
+  ];
+  var a01 = [
+     vec3(m[1][0], m[1][2], m[1][3]),
+     vec3(m[2][0], m[2][2], m[2][3]),
+     vec3(m[3][0], m[3][2], m[3][3])
+  ];
+  var a02 = [
+     vec3(m[1][0], m[1][1], m[1][3]),
+     vec3(m[2][0], m[2][1], m[2][3]),
+     vec3(m[3][0], m[3][1], m[3][3])
+  ];
+  var a03 = [
+     vec3(m[1][0], m[1][1], m[1][2]),
+     vec3(m[2][0], m[2][1], m[2][2]),
+     vec3(m[3][0], m[3][1], m[3][2])
+  ];
+  var a10 = [
+     vec3(m[0][1], m[0][2], m[0][3]),
+     vec3(m[2][1], m[2][2], m[2][3]),
+     vec3(m[3][1], m[3][2], m[3][3])
+  ];
+  var a11 = [
+     vec3(m[0][0], m[0][2], m[0][3]),
+     vec3(m[2][0], m[2][2], m[2][3]),
+     vec3(m[3][0], m[3][2], m[3][3])
+  ];
+  var a12 = [
+     vec3(m[0][0], m[0][1], m[0][3]),
+     vec3(m[2][0], m[2][1], m[2][3]),
+     vec3(m[3][0], m[3][1], m[3][3])
+  ];
+  var a13 = [
+     vec3(m[0][0], m[0][1], m[0][2]),
+     vec3(m[2][0], m[2][1], m[2][2]),
+     vec3(m[3][0], m[3][1], m[3][2])
+  ];
+  var a20 = [
+     vec3(m[0][1], m[0][2], m[0][3]),
+     vec3(m[1][1], m[1][2], m[1][3]),
+     vec3(m[3][1], m[3][2], m[3][3])
+  ];
+  var a21 = [
+     vec3(m[0][0], m[0][2], m[0][3]),
+     vec3(m[1][0], m[1][2], m[1][3]),
+     vec3(m[3][0], m[3][2], m[3][3])
+  ];
+  var a22 = [
+     vec3(m[0][0], m[0][1], m[0][3]),
+     vec3(m[1][0], m[1][1], m[1][3]),
+     vec3(m[3][0], m[3][1], m[3][3])
+  ];
+  var a23 = [
+     vec3(m[0][0], m[0][1], m[0][2]),
+     vec3(m[1][0], m[1][1], m[1][2]),
+     vec3(m[3][0], m[3][1], m[3][2])
+  ];
 
-// ... [other functions]
+  var a30 = [
+     vec3(m[0][1], m[0][2], m[0][3]),
+     vec3(m[1][1], m[1][2], m[1][3]),
+     vec3(m[2][1], m[2][2], m[2][3])
+  ];
+  var a31 = [
+     vec3(m[0][0], m[0][2], m[0][3]),
+     vec3(m[1][0], m[1][2], m[1][3]),
+     vec3(m[2][0], m[2][2], m[2][3])
+  ];
+  var a32 = [
+     vec3(m[0][0], m[0][1], m[0][3]),
+     vec3(m[1][0], m[1][1], m[1][3]),
+     vec3(m[2][0], m[2][1], m[2][3])
+  ];
+  var a33 = [
+     vec3(m[0][0], m[0][1], m[0][2]),
+     vec3(m[1][0], m[1][1], m[1][2]),
+     vec3(m[2][0], m[2][1], m[2][2])
+  ];
 
-function normalMatrix(modelViewMatrix, flag) {
-  var m = mat3();
-  m[0][0] = modelViewMatrix[0][0];
-  m[0][1] = modelViewMatrix[0][1];
-  m[0][2] = modelViewMatrix[0][2];
-  m[1][0] = modelViewMatrix[1][0];
-  m[1][1] = modelViewMatrix[1][1];
-  m[1][2] = modelViewMatrix[1][2];
-  m[2][0] = modelViewMatrix[2][0];
-  m[2][1] = modelViewMatrix[2][1];
-  m[2][2] = modelViewMatrix[2][2];
-  
-  return transpose(inverse(m));
+  a[0][0] = det3(a00)/d;
+  a[0][1] = -det3(a10)/d;
+  a[0][2] = det3(a20)/d;
+  a[0][3] = -det3(a30)/d;
+  a[1][0] = -det3(a01)/d;
+  a[1][1] = det3(a11)/d;
+  a[1][2] = -det3(a21)/d;
+  a[1][3] = det3(a31)/d;
+  a[2][0] = det3(a02)/d;
+  a[2][1] = -det3(a12)/d;
+  a[2][2] = det3(a22)/d;
+  a[2][3] = -det3(a32)/d;
+  a[3][0] = -det3(a03)/d;
+  a[3][1] = det3(a13)/d;
+  a[3][2] = -det3(a23)/d;
+  a[3][3] = det3(a33)/d;
+
+  return a;
 }
 
+// Additional function to convert 4x4 matrix to 3x3 matrix
+function mat4toMat3(m) {
+  var result = mat3();
+  for (var i = 0; i < 3; i++) {
+      for (var j = 0; j < 3; j++) {
+          result[i][j] = m[i][j];
+      }
+  }
+  return result;
+}
